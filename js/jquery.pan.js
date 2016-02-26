@@ -2,7 +2,7 @@
 
     var getSize = function($element) {
         return {
-            'width': $element.width(), 
+            'width': $element.width(),
             'height': $element.height()
         };
     };
@@ -21,6 +21,7 @@
         //we're pan it's child element, content
         var container = this;
         var content = this.children(':first');
+        var panInterval;
 
         //Precalculate the limits of panning - offset stores
         //the current amount of pan throughout
@@ -28,7 +29,7 @@
             Number(content.css('left').replace('px', '')) | 0,
             Number(content.css('top').replace('px', ''))  | 0
         );
-        
+
         var containerSize = getSize(container);
         var contentSize = getSize(content);
 
@@ -69,9 +70,12 @@
 
         //Delay in ms between updating position of content
         var updateInterval = settings.updateInterval;
+        var self = this;
 
         var onInterval = function() {
-            
+
+            console.log('test');
+
             var mouseControlHandlers = {
                 'edge'          : updateEdge,
                 'proportional'  : updateProportional,
@@ -85,11 +89,11 @@
                 offset.x += settings.autoSpeedX;
                 offset.y += settings.autoSpeedY;
             }
-            
+
             //If the previous updates have take the content
             //outside the allowed min/max, bring it back in
             constrainToBounds();
-            
+
             //If we're panning automatically, make sure we're
             //panning in the right direction if the content has
             //moved as far as it can go
@@ -112,7 +116,7 @@
             //so we'll find out what direction in case we need
             //to handle any callbacks
             var newDirection = toCoords(0, 0);
-            
+
             //If we're in the interaction zones to either
             //end of the element, pan in response to the
             //mouse position.
@@ -141,7 +145,7 @@
         var updateProportional = function() {
 
             if(!mouseOver) return false;
-            
+
             var rx = mousePosition.x / containerSize.width;
             var ry = mousePosition.y / containerSize.height;
             targetOffset = toCoords(
@@ -160,9 +164,9 @@
 
         var updateKinetic = function() {
             if(dragging) {
-                
+
                 if(lastMousePosition == null) {
-                    lastMousePosition = toCoords(mousePosition.x, mousePosition.y);    
+                    lastMousePosition = toCoords(mousePosition.x, mousePosition.y);
                 }
 
                 kineticVelocity = toCoords(
@@ -201,8 +205,20 @@
                 if(settings.mousePan) {
                    settings.mousePan(mousePanningDirection);
                 }
-            }   
+            }
         }
+
+        $.fn.pan.destroy = function() {
+            clearInterval(panInterval);
+            content.css({
+                left: '',
+                top: ''
+            });
+            self.unbind('mousemove');
+            self.unbind('mouseleave');
+            self.unbind('mousedown');
+            self.unbind('mouseup');
+        };
 
         this.bind('mousemove', function(evt) {
             mousePosition.x = evt.pageX - container.offset().left;
@@ -229,7 +245,7 @@
 
         //Kick off the main panning loop and return
         //this to maintain jquery chainability
-        setInterval(onInterval, updateInterval);
+        panInterval = setInterval(onInterval, updateInterval);
         return this;
     };
 
