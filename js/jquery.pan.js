@@ -74,8 +74,6 @@
 
         var onInterval = function() {
 
-            console.log('test');
-
             var mouseControlHandlers = {
                 'edge'          : updateEdge,
                 'proportional'  : updateProportional,
